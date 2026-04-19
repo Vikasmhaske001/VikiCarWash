@@ -17,8 +17,5 @@ public class UpdateBookingValidator : AbstractValidator<UpdateBookingDTO>
 
         RuleFor(x => x.CarType)
             .NotEmpty();
-
-        RuleFor(x => x.Price)
-            .GreaterThan(0);
     }
 }
