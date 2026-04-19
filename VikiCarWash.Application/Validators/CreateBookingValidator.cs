@@ -11,12 +11,11 @@ public class CreateBookingValidator : AbstractValidator<CreateBookingDTO>
             .NotEmpty().WithMessage("Customer name is required")
             .MaximumLength(50);
 
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Phone number is required")
-            .Length(10).WithMessage("Phone number must be 10 digits");
-
         RuleFor(x => x.CarType)
             .NotEmpty().WithMessage("Car type is required");
+
+        RuleFor(x => x.WashType)
+            .NotEmpty().WithMessage("Wash type is required");
 
         RuleFor(x => x.BookingDate)
             .GreaterThan(DateTime.Now.AddDays(-1))

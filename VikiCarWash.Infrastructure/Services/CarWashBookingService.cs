@@ -35,13 +35,14 @@ public class CarWashBookingService : ICarWashBookingService
         return _mapper.Map<BookingResponseDTO>(x);
     }
 
-    public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto)
+    public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto, int userId)
     {
         var booking = _mapper.Map<CarWashBooking>(dto);
 
-        booking.Price = CalculatePrice(booking.CarType, booking.WashType);
+        booking.CustomerId = userId;
 
-        booking.IsCompleted = false; 
+        booking.Price = CalculatePrice(booking.CarType, booking.WashType);
+        booking.IsCompleted = false;
 
         await _repository.AddAsync(booking);
 
