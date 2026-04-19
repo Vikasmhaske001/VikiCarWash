@@ -1,8 +1,9 @@
-﻿using VikiCarWash.Application.DTOs;
+﻿using AutoMapper;
+using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Services;
 using VikiCarWash.Domain.Entities;
-using AutoMapper;
+using VikiCarWash.Domain.Enums;
 
 namespace VikiCarWash.Infrastructure.Services;
 
@@ -37,7 +38,8 @@ public class CarWashBookingService : ICarWashBookingService
     public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto)
     {
         var booking = _mapper.Map<CarWashBooking>(dto);
-        booking.Price = GetPriceByCarType(dto.CarType);
+
+        booking.Price = CalculatePrice(booking.CarType, booking.WashType);
 
         booking.IsCompleted = false; 
 
@@ -49,15 +51,16 @@ public class CarWashBookingService : ICarWashBookingService
     public async Task<BookingResponseDTO> UpdateAsync(int id, UpdateBookingDTO dto)
     {
         var existing = await _repository.GetByIdAsync(id);
+
         if (existing == null)
             throw new Exception("Booking not found");
 
-        var booking = _mapper.Map<CarWashBooking>(dto);
-        booking.Id = id;
+        _mapper.Map(dto, existing);
 
-        await _repository.UpdateAsync(booking);
+        existing.Price = CalculatePrice(existing.CarType, existing.WashType);
+        await _repository.UpdateAsync(existing);
 
-        return _mapper.Map<BookingResponseDTO>(booking);
+        return _mapper.Map<BookingResponseDTO>(existing);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -70,15 +73,27 @@ public class CarWashBookingService : ICarWashBookingService
         return true;
     }
 
-    private decimal GetPriceByCarType(string carType)
+    private decimal CalculatePrice(CarTypeEnum carType, WashTypeEnum washType)
     {
-        return carType.ToLower() switch
+        decimal basePrice = carType switch
         {
-            "hatchback" => 300,
-            "sedan" => 400,
-            "suv" => 600,
-            "luxury" => 1000,
-            _ => throw new Exception("Invalid car type")
+            CarTypeEnum.Hatchback => 300,
+            CarTypeEnum.Sedan => 400,
+            CarTypeEnum.CompactSUV => 500,
+            CarTypeEnum.SUV => 600,
+            CarTypeEnum.MUV => 700,
+            CarTypeEnum.EV => 550,
+            CarTypeEnum.Utility => 650,
+
+            _ => throw new ArgumentOutOfRangeException(nameof(carType), "Invalid car type")
         };
+        decimal washMultiplier = washType switch {
+            WashTypeEnum.Basic => 1.0m,
+            WashTypeEnum.Steam => 1.5m,
+            WashTypeEnum.DeepClean => 2.0m,
+            WashTypeEnum.Premium => 2.5m,
+            _ => throw new ArgumentOutOfRangeException(nameof(washType), "Invalid wash type")
+        };
+        return basePrice * washMultiplier;
     }
 }
