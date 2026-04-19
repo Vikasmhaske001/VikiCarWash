@@ -1,15 +1,16 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
+using VikiCarWash.API.Middleware;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Mappings;
 using VikiCarWash.Application.Services;
+using VikiCarWash.Application.Validators;
 using VikiCarWash.Infrastructure.Data;
 using VikiCarWash.Infrastructure.Repositories;
 using VikiCarWash.Infrastructure.Services;
-using VikiCarWash.API.Middleware;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using VikiCarWash.Application.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,11 @@ builder.Services.AddScoped<ICarWashBookingService, CarWashBookingService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateBookingValidator>();
-
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
