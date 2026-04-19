@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VikiCarWash.Application\VikiCarWash.Application.csproj" />
+    <ProjectReference Include="..\VikiCarWash.Domain\VikiCarWash.Domain.csproj" />
     <ProjectReference Include="..\VikiCarWash.Infrastructure\VikiCarWash.Infrastructure.csproj" />
   </ItemGroup>
 

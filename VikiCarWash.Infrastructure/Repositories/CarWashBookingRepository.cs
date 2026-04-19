@@ -45,7 +45,6 @@ namespace VikiCarWash.Infrastructure.Repositories
 
         public async Task UpdateAsync(CarWashBooking booking)
         {
-            _context.CarWashBookings.Update(booking);
             await _context.SaveChangesAsync();
         }
     }
