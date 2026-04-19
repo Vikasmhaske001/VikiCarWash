@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Services;
 using VikiCarWash.Domain.Entities;
+using System.Security.Claims;
+
 
 namespace VikiCarWash.API.Controllers
 {
@@ -38,10 +42,13 @@ namespace VikiCarWash.API.Controllers
         }
 
         //POST: api/CarWashBooking
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(CreateBookingDTO dto)
         {
-            var result = await _service.CreateAsync(dto);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var result = await _service.CreateAsync(dto, userId);
 
             return Ok(result);
         }

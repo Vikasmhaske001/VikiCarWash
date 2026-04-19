@@ -8,6 +8,10 @@ using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Domain.Entities;
 using VikiCarWash.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace VikiCarWash.Infrastructure.Services
 {
@@ -64,7 +68,28 @@ namespace VikiCarWash.Infrastructure.Services
 
             await _context.SaveChangesAsync();
 
-            return "OTP Verified Successfully"; 
+            return GenerateJwt(customer);
+        }
+        private string GenerateJwt(Customer user)
+        {
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber)
+    };
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
