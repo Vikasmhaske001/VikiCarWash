@@ -37,7 +37,9 @@ public class CarWashBookingService : ICarWashBookingService
     public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto)
     {
         var booking = _mapper.Map<CarWashBooking>(dto);
-        booking.IsCompleted = false; // keep this
+        booking.Price = GetPriceByCarType(dto.CarType);
+
+        booking.IsCompleted = false; 
 
         await _repository.AddAsync(booking);
 
@@ -66,5 +68,17 @@ public class CarWashBookingService : ICarWashBookingService
 
         await _repository.DeleteAsync(id);
         return true;
+    }
+
+    private decimal GetPriceByCarType(string carType)
+    {
+        return carType.ToLower() switch
+        {
+            "hatchback" => 300,
+            "sedan" => 400,
+            "suv" => 600,
+            "luxury" => 1000,
+            _ => throw new Exception("Invalid car type")
+        };
     }
 }
