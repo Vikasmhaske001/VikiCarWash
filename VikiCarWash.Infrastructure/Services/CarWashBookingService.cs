@@ -2,107 +2,68 @@
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Services;
 using VikiCarWash.Domain.Entities;
+using AutoMapper;
 
 namespace VikiCarWash.Infrastructure.Services;
 
 public class CarWashBookingService : ICarWashBookingService
 {
+    private readonly IMapper _mapper;
     private readonly ICarWashBookingRepository _repository;
 
-    public CarWashBookingService(ICarWashBookingRepository repository)
+    public CarWashBookingService(ICarWashBookingRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<List<BookingResponseDTO>> GetAllAsync()
     {
         var data = await _repository.GetAllAsync();
 
-        return data.Select(x => new BookingResponseDTO
-        {
-            Id = x.Id,
-            CustomerName = x.CustomerName,
-            PhoneNumber = x.PhoneNumber,
-            CarType = x.CarType,
-            BookingDate = x.BookingDate,
-            Price = x.Price,
-            IsCompleted = x.IsCompleted
-        }).ToList();
+        return _mapper.Map<List<BookingResponseDTO>>(data);
     }
 
     public async Task<BookingResponseDTO> GetByIdAsync(int id)
     {
         var x = await _repository.GetByIdAsync(id);
 
-        if (x == null) return null;
+        if (x == null)
+        throw new Exception("Booking not found");
 
-        return new BookingResponseDTO
-        {
-            Id = x.Id,
-            CustomerName = x.CustomerName,
-            PhoneNumber = x.PhoneNumber,
-            CarType = x.CarType,
-            BookingDate = x.BookingDate,
-            Price = x.Price,
-            IsCompleted = x.IsCompleted
-        };
+        return _mapper.Map<BookingResponseDTO>(x);
     }
 
     public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto)
     {
-        var booking = new CarWashBooking
-        {
-            CustomerName = dto.CustomerName,
-            PhoneNumber = dto.PhoneNumber,
-            CarType = dto.CarType,
-            BookingDate = dto.BookingDate,
-            Price = dto.Price,
-            IsCompleted = false
-        };
+        var booking = _mapper.Map<CarWashBooking>(dto);
+        booking.IsCompleted = false; // keep this
 
         await _repository.AddAsync(booking);
 
-        return new BookingResponseDTO
-        {
-            Id = booking.Id,
-            CustomerName = booking.CustomerName,
-            PhoneNumber = booking.PhoneNumber,
-            CarType = booking.CarType,
-            BookingDate = booking.BookingDate,
-            Price = booking.Price,
-            IsCompleted = booking.IsCompleted
-        };
+        return _mapper.Map<BookingResponseDTO>(booking);
     }
 
     public async Task<BookingResponseDTO> UpdateAsync(int id, UpdateBookingDTO dto)
     {
-        var booking = new CarWashBooking
-        {
-            Id = id,
-            CustomerName = dto.CustomerName,
-            PhoneNumber = dto.PhoneNumber,
-            CarType = dto.CarType,
-            BookingDate = dto.BookingDate,
-            Price = dto.Price,
-            IsCompleted = dto.IsCompleted
-        };
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing == null)
+            throw new Exception("Booking not found");
+
+        var booking = _mapper.Map<CarWashBooking>(dto);
+        booking.Id = id;
 
         await _repository.UpdateAsync(booking);
 
-        return new BookingResponseDTO
-        {
-            Id = booking.Id,
-            CustomerName = booking.CustomerName,
-            PhoneNumber = booking.PhoneNumber,
-            CarType = booking.CarType,
-            BookingDate = booking.BookingDate,
-            Price = booking.Price,
-            IsCompleted = booking.IsCompleted
-        };
+        return _mapper.Map<BookingResponseDTO>(booking);
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing == null)
+            throw new Exception("Booking not found");
+
         await _repository.DeleteAsync(id);
         return true;
     }
