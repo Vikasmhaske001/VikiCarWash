@@ -12,5 +12,7 @@ namespace VikiCarWash.Infrastructure.Data
         {
         }
         public DbSet<CarWashBooking>CarWashBookings { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
     }
 }
