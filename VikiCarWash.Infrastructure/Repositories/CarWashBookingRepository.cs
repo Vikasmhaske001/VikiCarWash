@@ -35,12 +35,12 @@ namespace VikiCarWash.Infrastructure.Repositories
 
         public async Task<List<CarWashBooking>> GetAllAsync()
         {
-            return await _context.CarWashBookings.ToListAsync();
+            return await _context.CarWashBookings.Include(b => b.Customer).ToListAsync();
         }
 
         public async Task<CarWashBooking> GetByIdAsync(int id)
         {
-            return await _context.CarWashBookings.FindAsync(id);
+            return await _context.CarWashBookings.Include(b => b.Customer).FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task UpdateAsync(CarWashBooking booking)

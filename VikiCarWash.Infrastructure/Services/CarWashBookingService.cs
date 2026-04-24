@@ -42,9 +42,12 @@ public class CarWashBookingService : ICarWashBookingService
         booking.CustomerId = userId;
 
         booking.Price = CalculatePrice(booking.CarType, booking.WashType);
+
         booking.IsCompleted = false;
 
         await _repository.AddAsync(booking);
+
+        var savedBooking = await _repository.GetByIdAsync(booking.Id);
 
         return _mapper.Map<BookingResponseDTO>(booking);
     }
