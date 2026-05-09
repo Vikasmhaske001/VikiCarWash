@@ -12,8 +12,8 @@ using VikiCarWash.Infrastructure.Data;
 namespace VikiCarWash.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260419133237_AddCustomerToBooking")]
-    partial class AddCustomerToBooking
+    [Migration("20260424200855_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,6 +39,9 @@ namespace VikiCarWash.Infrastructure.Migrations
                     b.Property<int>("CarType")
                         .HasColumnType("int");
 
+                    b.Property<int>("CenterId")
+                        .HasColumnType("int");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
@@ -50,16 +53,45 @@ namespace VikiCarWash.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("WashType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CenterId");
+
                     b.HasIndex("CustomerId");
 
                     b.ToTable("CarWashBookings");
+                });
+
+            modelBuilder.Entity("VikiCarWash.Domain.Entities.CarWashCenter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("CarWashCenters");
                 });
 
             modelBuilder.Entity("VikiCarWash.Domain.Entities.Customer", b =>
@@ -82,6 +114,9 @@ namespace VikiCarWash.Infrastructure.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -117,13 +152,37 @@ namespace VikiCarWash.Infrastructure.Migrations
 
             modelBuilder.Entity("VikiCarWash.Domain.Entities.CarWashBooking", b =>
                 {
+                    b.HasOne("VikiCarWash.Domain.Entities.CarWashCenter", "Center")
+                        .WithMany("Bookings")
+                        .HasForeignKey("CenterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VikiCarWash.Domain.Entities.Customer", "Customer")
                         .WithMany("Bookings")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Center");
+
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("VikiCarWash.Domain.Entities.CarWashCenter", b =>
+                {
+                    b.HasOne("VikiCarWash.Domain.Entities.Customer", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("VikiCarWash.Domain.Entities.CarWashCenter", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("VikiCarWash.Domain.Entities.Customer", b =>

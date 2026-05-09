@@ -9,4 +9,5 @@ public interface ICarWashBookingService
     Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto, int userId);
     Task<BookingResponseDTO> UpdateAsync(int id, UpdateBookingDTO dto);
     Task<bool> DeleteAsync(int id);
+    Task<List<BookingResponseDTO>> GetBookingsByOwnerIdAsync(int ownerId);
 }

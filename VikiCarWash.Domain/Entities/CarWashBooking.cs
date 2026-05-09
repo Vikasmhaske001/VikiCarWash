@@ -16,5 +16,7 @@ namespace VikiCarWash.Domain.Entities
         public bool IsCompleted { get; set; }
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }
+        public int CenterId { get; set; }
+        public CarWashCenter Center { get; set; }
     }
 }

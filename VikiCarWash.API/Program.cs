@@ -51,7 +51,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CustomerOnly", policy => policy.RequireClaim("role", "Customer"));
+    options.AddPolicy("OwnerOnly", policy => policy.RequireRole("Owner"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+
+});
 
 var app = builder.Build();
 
@@ -71,6 +77,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<UserContextMiddleware>();
 
 app.UseHttpsRedirection();
 app.MapControllers();

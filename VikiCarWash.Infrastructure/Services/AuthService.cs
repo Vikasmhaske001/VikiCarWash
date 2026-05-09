@@ -80,7 +80,8 @@ namespace VikiCarWash.Infrastructure.Services
             var claims = new[]
             {
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber)
+        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
+        new Claim (ClaimTypes.Role, user.Role.ToString())
     };
 
             var token = new JwtSecurityToken(
