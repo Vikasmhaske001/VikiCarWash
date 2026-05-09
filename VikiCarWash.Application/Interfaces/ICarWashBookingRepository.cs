@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using VikiCarWash.Application.DTOs;
 using VikiCarWash.Domain.Entities;
 
 namespace VikiCarWash.Application.Interfaces
@@ -12,6 +13,7 @@ namespace VikiCarWash.Application.Interfaces
         Task AddAsync(CarWashBooking booking);
         Task UpdateAsync(CarWashBooking booking);
         Task DeleteAsync(int id);
+        Task<List<CarWashBooking>> GetBookingsByOwnerIdAsync(int ownerId);
 
     }
 }

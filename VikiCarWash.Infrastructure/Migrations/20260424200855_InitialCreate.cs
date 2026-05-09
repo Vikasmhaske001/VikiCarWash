@@ -17,10 +17,11 @@ namespace VikiCarWash.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,34 +45,72 @@ namespace VikiCarWash.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CarWashCenters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OwnerId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CarWashCenters", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CarWashCenters_Customers_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CarWashBookings",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CarType = table.Column<int>(type: "int", nullable: false),
                     BookingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     WashType = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: true)
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    CenterId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CarWashBookings", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_CarWashBookings_CarWashCenters_CenterId",
+                        column: x => x.CenterId,
+                        principalTable: "CarWashCenters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_CarWashBookings_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CarWashBookings_CenterId",
+                table: "CarWashBookings",
+                column: "CenterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CarWashBookings_CustomerId",
                 table: "CarWashBookings",
                 column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CarWashCenters_OwnerId",
+                table: "CarWashCenters",
+                column: "OwnerId");
         }
 
         /// <inheritdoc />
@@ -82,6 +121,9 @@ namespace VikiCarWash.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "OtpVerifications");
+
+            migrationBuilder.DropTable(
+                name: "CarWashCenters");
 
             migrationBuilder.DropTable(
                 name: "Customers");

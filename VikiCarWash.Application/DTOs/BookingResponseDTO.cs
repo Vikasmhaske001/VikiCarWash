@@ -6,6 +6,7 @@ public class BookingResponseDTO
 {
     public int Id { get; set; }
     public string CustomerName { get; set; }
+    public string PhoneNumber { get; set; }
     public string CarType { get; set; }
     public WashTypeEnum WashType { get; set; }
     public DateTime BookingDate { get; set; }

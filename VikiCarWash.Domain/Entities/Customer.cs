@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using VikiCarWash.Domain.Enums;
 
 namespace VikiCarWash.Domain.Entities
 {
@@ -12,5 +13,7 @@ namespace VikiCarWash.Domain.Entities
         public bool IsVerified { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public List<CarWashBooking> Bookings { get; set; } 
+        public UserRole Role { get; set; } = UserRole.Customer;
+
     }
 }

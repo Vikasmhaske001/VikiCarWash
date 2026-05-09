@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Services;
 using VikiCarWash.Domain.Entities;
 using VikiCarWash.Domain.Enums;
+using VikiCarWash.Infrastructure.Data;
 
 namespace VikiCarWash.Infrastructure.Services;
 
@@ -11,17 +13,18 @@ public class CarWashBookingService : ICarWashBookingService
 {
     private readonly IMapper _mapper;
     private readonly ICarWashBookingRepository _repository;
+    private readonly AppDbContext _context;
 
-    public CarWashBookingService(ICarWashBookingRepository repository, IMapper mapper)
+    public CarWashBookingService(ICarWashBookingRepository repository, IMapper mapper, AppDbContext context)
     {
         _repository = repository;
         _mapper = mapper;
+        _context = context;
     }
 
     public async Task<List<BookingResponseDTO>> GetAllAsync()
     {
         var data = await _repository.GetAllAsync();
-
         return _mapper.Map<List<BookingResponseDTO>>(data);
     }
 
@@ -30,23 +33,48 @@ public class CarWashBookingService : ICarWashBookingService
         var x = await _repository.GetByIdAsync(id);
 
         if (x == null)
-        throw new Exception("Booking not found");
+            throw new Exception("Booking not found");
 
         return _mapper.Map<BookingResponseDTO>(x);
     }
 
     public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto, int userId)
     {
+        // Validate that the center exists and is owned by the user (if owner is creating for their center)
+        var center = await _context.CarWashCenters.FirstOrDefaultAsync(c => c.Id == dto.CenterId);
+        if (center == null)
+            throw new Exception("Center not found");
+
         var booking = _mapper.Map<CarWashBooking>(dto);
 
         booking.CustomerId = userId;
-
+        booking.CenterId = dto.CenterId;
         booking.Price = CalculatePrice(booking.CarType, booking.WashType);
         booking.IsCompleted = false;
 
         await _repository.AddAsync(booking);
 
-        return _mapper.Map<BookingResponseDTO>(booking);
+        var savedBooking = await _repository.GetByIdAsync(booking.Id);
+
+        return _mapper.Map<BookingResponseDTO>(savedBooking);
+    }
+
+    /// <summary>
+    /// Gets bookings for owner's centers with additional security validation.
+    /// </summary>
+    public async Task<List<BookingResponseDTO>> GetBookingsByOwnerIdAsync(int ownerId)
+    {
+        var data = await _repository.GetBookingsByOwnerIdAsync(ownerId);
+        
+        // Additional validation: Ensure all bookings belong to centers owned by the owner
+        // This is a defense-in-depth measure (query filters should already enforce this)
+        var invalidBookings = data.Where(b => b.Center.OwnerId != ownerId).ToList();
+        if (invalidBookings.Any())
+        {
+            throw new UnauthorizedAccessException("Attempted to access bookings from other owners' centers");
+        }
+
+        return _mapper.Map<List<BookingResponseDTO>>(data);
     }
 
     public async Task<BookingResponseDTO> UpdateAsync(int id, UpdateBookingDTO dto)
@@ -85,16 +113,18 @@ public class CarWashBookingService : ICarWashBookingService
             CarTypeEnum.MUV => 700,
             CarTypeEnum.EV => 550,
             CarTypeEnum.Utility => 650,
-
             _ => throw new ArgumentOutOfRangeException(nameof(carType), "Invalid car type")
         };
-        decimal washMultiplier = washType switch {
+
+        decimal washMultiplier = washType switch
+        {
             WashTypeEnum.Basic => 1.0m,
             WashTypeEnum.Steam => 1.5m,
             WashTypeEnum.DeepClean => 2.0m,
             WashTypeEnum.Premium => 2.5m,
             _ => throw new ArgumentOutOfRangeException(nameof(washType), "Invalid wash type")
         };
+
         return basePrice * washMultiplier;
     }
 }

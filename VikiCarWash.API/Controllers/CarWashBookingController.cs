@@ -5,7 +5,6 @@ using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Application.Services;
 using VikiCarWash.Domain.Entities;
-using System.Security.Claims;
 
 
 namespace VikiCarWash.API.Controllers
@@ -22,7 +21,8 @@ namespace VikiCarWash.API.Controllers
         }
 
         //GET: api/CarWashBooking
-        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all-users")]
         public async Task<IActionResult> GetAll()
         {
             var data = await _service.GetAllAsync();
@@ -41,8 +41,29 @@ namespace VikiCarWash.API.Controllers
             return Ok(data);
         }
 
+        [Authorize(Roles = "Owner")]
+        [HttpGet("center-bookings")]
+        public async Task<IActionResult> GetCenterBookings()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var ownerId))
+            {
+                return Unauthorized(new { error = "Invalid user identity" });
+            }
+
+            try
+            {
+                var result = await _service.GetBookingsByOwnerIdAsync(ownerId);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+        }
+
         //POST: api/CarWashBooking
-        [Authorize]
+        [Authorize(Roles ="Customer")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateBookingDTO dto)
         {
