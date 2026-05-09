@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
@@ -50,7 +51,7 @@ public class CarWashBookingService : ICarWashBookingService
         booking.CustomerId = userId;
         booking.CenterId = dto.CenterId;
         booking.Price = CalculatePrice(booking.CarType, booking.WashType);
-        booking.IsCompleted = false;
+        booking.Status = BookingStatusEnum.Pending;
 
         await _repository.AddAsync(booking);
 
@@ -100,6 +101,28 @@ public class CarWashBookingService : ICarWashBookingService
 
         await _repository.DeleteAsync(id);
         return true;
+    }
+
+    /// <summary>
+    /// Updates booking status for owner's center bookings.
+    /// Ensures owner can only update bookings from their centers.
+    /// </summary>
+    public async Task<BookingResponseDTO> UpdateBookingStatusAsync(int bookingId, int ownerId, UpdateBookingStatusDTO dto)
+    {
+        var booking = await _repository.GetByIdAsync(bookingId);
+
+        if (booking == null)
+            throw new Exception("Booking not found");
+
+        // Verify owner owns the center
+        if (booking.Center.OwnerId != ownerId)
+            throw new UnauthorizedAccessException(
+                "You do not have permission to update this booking");
+
+        booking.Status = dto.Status;
+        await _repository.UpdateAsync(booking);
+
+        return _mapper.Map<BookingResponseDTO>(booking);
     }
 
     private decimal CalculatePrice(CarTypeEnum carType, WashTypeEnum washType)

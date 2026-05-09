@@ -88,5 +88,13 @@ namespace VikiCarWash.API.Controllers
            await _service.DeleteAsync(id);
             return Ok();
         }
+        [Authorize(Roles="Owner")]
+        [HttpPut("{id}/status")]
+        public async Task <IActionResult> UpdateStatus(int id, UpdateBookingStatusDTO dto)
+        {
+            var ownerId=int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var result= await _service.UpdateBookingStatusAsync(id, ownerId, dto);
+            return Ok(result);
+        }
     }
 }

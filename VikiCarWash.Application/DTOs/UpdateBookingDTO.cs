@@ -9,5 +9,5 @@ public class UpdateBookingDTO
     public CarTypeEnum CarType { get; set; }
     public WashTypeEnum WashType { get; set; }
     public DateTime BookingDate { get; set; }
-    public bool IsCompleted { get; set; }
+    public BookingStatusEnum Status { get; set; }
 }
