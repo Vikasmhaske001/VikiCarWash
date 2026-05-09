@@ -41,16 +41,19 @@ public class CarWashBookingService : ICarWashBookingService
 
     public async Task<BookingResponseDTO> CreateAsync(CreateBookingDTO dto, int userId)
     {
-        // Validate that the center exists and is owned by the user (if owner is creating for their center)
-        var center = await _context.CarWashCenters.FirstOrDefaultAsync(c => c.Id == dto.CenterId);
-        if (center == null)
-            throw new Exception("Center not found");
+        var customer = await _context.Customers.FindAsync(userId);
+
+        if (customer == null)
+            throw new Exception("Customer not found");
 
         var booking = _mapper.Map<CarWashBooking>(dto);
 
         booking.CustomerId = userId;
+        booking.CustomerName = customer.Name;
         booking.CenterId = dto.CenterId;
+
         booking.Price = CalculatePrice(booking.CarType, booking.WashType);
+
         booking.Status = BookingStatusEnum.Pending;
 
         await _repository.AddAsync(booking);

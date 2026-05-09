@@ -38,7 +38,7 @@ namespace VikiCarWash.Infrastructure.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var booking = _context.CarWashBookings.Find(id);
+            var booking = await _context.CarWashBookings.FindAsync(id);
             if (booking != null)
             {
                 _context.CarWashBookings.Remove(booking);
