@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 
 namespace VikiCarWash.API.Controllers
@@ -26,6 +28,26 @@ namespace VikiCarWash.API.Controllers
         {
             var token = await _service.VerifyOtpAsync(dto.PhoneNumber, dto.Otp);
             return Ok(new { token });
+        }
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var result = await _service.GetProfileAsync(userId);
+
+            return Ok(result);
+        }
+        [Authorize]
+        [HttpPut("complete-profile")]
+        public async Task<IActionResult> CompleteProfile(CompleteProfileDTO dto)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var result = await _service.CompleteProfileAsync(userId, dto);
+
+            return Ok(result);
         }
     }
 }

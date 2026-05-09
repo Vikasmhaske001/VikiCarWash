@@ -11,5 +11,5 @@ public class BookingResponseDTO
     public WashTypeEnum WashType { get; set; }
     public DateTime BookingDate { get; set; }
     public decimal Price { get; set; }
-    public bool IsCompleted { get; set; }
+    public string Status { get; set; }
 }

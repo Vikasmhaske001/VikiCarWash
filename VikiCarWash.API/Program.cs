@@ -27,6 +27,8 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ICarWashBookingRepository, CarWashBookingRepository>();
 builder.Services.AddScoped<ICarWashBookingService, CarWashBookingService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICarWashCenterRepository, CarWashCenterRepository>();
+builder.Services.AddScoped<ICarWashCenterService, CarWashCenterService>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 builder.Services.AddFluentValidationAutoValidation();

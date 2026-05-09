@@ -7,9 +7,7 @@ public class CreateBookingValidator : AbstractValidator<CreateBookingDTO>
 {
     public CreateBookingValidator()
     {
-        RuleFor(x => x.CustomerName)
-            .NotEmpty().WithMessage("Customer name is required")
-            .MaximumLength(50);
+
 
         RuleFor(x => x.CarType)
             .NotEmpty().WithMessage("Car type is required");

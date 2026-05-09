@@ -13,7 +13,7 @@ namespace VikiCarWash.Domain.Entities
         public DateTime BookingDate { get; set; }
         public WashTypeEnum WashType { get; set; }
         public decimal Price { get; set; }
-        public bool IsCompleted { get; set; }
+        public BookingStatusEnum Status { get; set; }
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }
         public int CenterId { get; set; }

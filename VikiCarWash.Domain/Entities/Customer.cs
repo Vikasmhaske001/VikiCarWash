@@ -9,6 +9,7 @@ namespace VikiCarWash.Domain.Entities
     {
         public int Id { get; set; }
         public string? Name { get; set; }
+        public string? Email { get; set; }
         public string PhoneNumber { get; set; }
         public bool IsVerified { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

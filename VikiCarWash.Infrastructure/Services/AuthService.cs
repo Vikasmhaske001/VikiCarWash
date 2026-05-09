@@ -1,17 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text;
+using VikiCarWash.Application.DTOs;
 using VikiCarWash.Application.Interfaces;
 using VikiCarWash.Domain.Entities;
 using VikiCarWash.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace VikiCarWash.Infrastructure.Services
 {
@@ -91,6 +92,43 @@ namespace VikiCarWash.Infrastructure.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public async Task<CustomerProfileDTO> GetProfileAsync(int userId)
+        {
+            var customer = await _context.Customers.FindAsync(userId);
+
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            return new CustomerProfileDTO
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber,
+                Role = customer.Role.ToString()
+            };
+        }
+        public async Task<CustomerProfileDTO> CompleteProfileAsync(int userId, CompleteProfileDTO dto)
+        {
+            var customer = await _context.Customers.FindAsync(userId);
+
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            customer.Name = dto.Name;
+            customer.Email = dto.Email;
+
+            await _context.SaveChangesAsync();
+
+            return new CustomerProfileDTO
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber,
+                Role = customer.Role.ToString()
+            };
         }
     }
 }
